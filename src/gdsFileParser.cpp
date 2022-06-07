@@ -31,6 +31,7 @@
 
 #include "gdsFileParser.h"
 #include "gdsCalmaRecords.h"
+#include "DataStructures.h"
 #include <math.h>
 #include <cstdlib>
 #include <cstring>

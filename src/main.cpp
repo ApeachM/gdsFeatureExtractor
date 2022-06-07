@@ -37,7 +37,7 @@
 #include <cstring>
 #include <iomanip>
 
-#include "gdsFileParser.h"
+#include "../include/gdsFileParser.h"
 
 using namespace std;
 
