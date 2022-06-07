@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 14)
 include_directories(src)
 
 add_executable(gdsFileParser
-        src/gdsFileParser.cpp
+        src/GDS.cpp
         src/main.cpp
         src/DataStructures.cpp)
 

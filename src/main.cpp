@@ -37,13 +37,13 @@
 #include <cstring>
 #include <iomanip>
 
-#include "../include/gdsFileParser.h"
+#include "GDS.h"
 
 using namespace std;
 
 #define SET_2W setfill('0') << setw(2)
 
-class MyTestParser : public gdsfp::gdsFileParser {
+class MyTestParser : public GDS::GDS {
 protected:
     virtual void onParsedGDSVersion(unsigned short version) {
         cout << "GDSII Version: " << version << endl;

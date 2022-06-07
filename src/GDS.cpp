@@ -29,7 +29,7 @@
  *
  */
 
-#include "gdsFileParser.h"
+#include "GDS.h"
 #include "gdsCalmaRecords.h"
 #include "DataStructures.h"
 #include <math.h>
@@ -41,7 +41,7 @@
 
 using namespace std;
 
-namespace gdsfp {
+namespace GDS {
     unsigned long p_256[8] = {0x1,
                               0x100,
                               0x10000,
@@ -52,19 +52,19 @@ namespace gdsfp {
                               0x100000000000000
     };
 
-    short gdsFileParser::readShort(std::ifstream *input) {
+    short GDS::readShort(std::ifstream *input) {
         unsigned char p[2];
         input->read((char *) &p, sizeof(p));
         return ((p[0] << 8) | p[1]);
     }
 
-    short gdsFileParser::readShort(stringstream *input) {
+    short GDS::readShort(stringstream *input) {
         unsigned char p[2];
         input->read((char *) &p, sizeof(p));
         return ((p[0] << 8) | p[1]);
     }
 
-    double gdsFileParser::readDouble(stringstream *input) {
+    double GDS::readDouble(stringstream *input) {
         short neg = 1;
         unsigned char p[8];
         int exp = 0;
@@ -85,7 +85,7 @@ namespace gdsfp {
         return man * pow(16, exp) * neg;
     }
 
-    void gdsFileParser::readString(stringstream *input, string *str) {
+    void GDS::readString(stringstream *input, string *str) {
         string temp = input->str();
 
         for (string::iterator it = temp.begin(); it != temp.end(); ++it) {
@@ -97,21 +97,21 @@ namespace gdsfp {
         }
     }
 
-    int gdsFileParser::readInt(stringstream *input) {
+    int GDS::readInt(stringstream *input) {
         unsigned char p[4];
         input->read((char *) &p[0], sizeof(p));
         return ((p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]);
     }
 
-    unsigned int gdsFileParser::readUInt(stringstream *input) {
+    unsigned int GDS::readUInt(stringstream *input) {
         char p[4];
         input->read((char *) &p[0], sizeof(p));
         return ((p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]);
     }
 
-    void gdsFileParser::readTimeStamp(stringstream *input, short *year,
-                                      short *month, short *day, short *hour,
-                                      short *minute, short *sec) {
+    void GDS::readTimeStamp(stringstream *input, short *year,
+                            short *month, short *day, short *hour,
+                            short *minute, short *sec) {
         (*year) = readShort(input);
         (*month) = readShort(input);
         (*day) = readShort(input);
@@ -124,84 +124,84 @@ namespace gdsfp {
         }
     }
 
-    void gdsFileParser::readHeader(stringstream *input) {
+    void GDS::readHeader(stringstream *input) {
         onParsedGDSVersion(readShort(input));
     }
 
-    void gdsFileParser::readModTimeStamp(stringstream *input) {
+    void GDS::readModTimeStamp(stringstream *input) {
         short year, month, day, hour, minute, sec;
         readTimeStamp(input, &year, &month, &day, &hour, &minute, &sec);
         onParsedModTime(year, month, day, hour, minute, sec);
     }
 
-    void gdsFileParser::readAccessTimeStamp(stringstream *input) {
+    void GDS::readAccessTimeStamp(stringstream *input) {
         short year, month, day, hour, minute, sec;
         readTimeStamp(input, &year, &month, &day, &hour, &minute, &sec);
         onParsedAccessTime(year, month, day, hour, minute, sec);
     }
 
-    void gdsFileParser::readLibName(stringstream *input) {
+    void GDS::readLibName(stringstream *input) {
         std::string libName;
         readString(input, &libName);
         onParsedLibName(libName.c_str());
     }
 
-    void gdsFileParser::readUnits(stringstream *input) {
+    void GDS::readUnits(stringstream *input) {
         double uu = readDouble(input);
         double db = readDouble(input);
         onParsedUnits(uu, db);
     }
 
-    void gdsFileParser::readStrName(stringstream *input) {
+    void GDS::readStrName(stringstream *input) {
         string strName;
         readString(input, &strName);
         onParsedStrName(strName.c_str());
     }
 
-    void gdsFileParser::readBoundary(stringstream *input) {
+    void GDS::readBoundary(stringstream *input) {
         onParsedBoundaryStart();
     }
 
-    void gdsFileParser::readPath(stringstream *input) {
+    void GDS::readPath(stringstream *input) {
         onParsedPathStart();
     }
 
-    void gdsFileParser::readBox(stringstream *input) {
+    void GDS::readBox(stringstream *input) {
         onParsedBoxStart();
     }
 
-    void gdsFileParser::readEndElement(stringstream *input) {
+    void GDS::readEndElement(stringstream *input) {
         onParsedEndElement();
     }
 
-    void gdsFileParser::readEndStructure(stringstream *input) {
+    void GDS::readEndStructure(stringstream *input) {
         onParsedEndStructure();
     }
 
-    void gdsFileParser::readEndLib(stringstream *input) {
+    void GDS::readEndLib(stringstream *input) {
         onParsedEndLib();
     }
 
-    void gdsFileParser::readColumnRow(stringstream *input) {
+    void GDS::readColumnRow(stringstream *input) {
         unsigned short column, row;
         column = readShort(input);
         row = readShort(input);
         onParsedColumnsRows(column, row);
     }
 
-    void gdsFileParser::readPathType(stringstream *input) {
+    void GDS::readPathType(stringstream *input) {
         unsigned short path;
         path = readShort(input);
         onParsedPathType(path);
     }
 
-    void gdsFileParser::readStrans(stringstream *input) {
+    void GDS::readStrans(stringstream *input) {
         short strans;
         strans = readShort(input);
         onParsedStrans(strans);
     }
 
-    void gdsFileParser::readPresentation(stringstream *input) {
+    void GDS::readPresentation(stringstream *input) {
         short present;
         present = readShort(input);
         short font, valign, halign;
@@ -211,41 +211,41 @@ namespace gdsfp {
         onParsedPresentation(font, valign, halign);
     }
 
-    void gdsFileParser::readNode(stringstream *input) {
+    void GDS::readNode(stringstream *input) {
         onParsedNodeStart();
     }
 
-    void gdsFileParser::readText(stringstream *input) {
+    void GDS::readText(stringstream *input) {
         onParsedTextStart();
     }
 
-    void gdsFileParser::readSref(stringstream *input) {
+    void GDS::readSref(stringstream *input) {
         onParsedSrefStart();
     }
 
-    void gdsFileParser::readAref(stringstream *input) {
+    void GDS::readAref(stringstream *input) {
         onParsedArefStart();
     }
 
-    void gdsFileParser::readSname(stringstream *input) {
+    void GDS::readSname(stringstream *input) {
         string sname;
         readString(input, &sname);
         onParsedSname(sname.c_str());
     }
 
-    void gdsFileParser::readString(stringstream *input) {
+    void GDS::readString(stringstream *input) {
         string str;
         readString(input, &str);
         onParsedString(str.c_str());
     }
 
-    void gdsFileParser::readPropValue(stringstream *input) {
+    void GDS::readPropValue(stringstream *input) {
         string prop;
         readString(input, &prop);
         onParsedPropValue(prop.c_str());
     }
 
-    void gdsFileParser::readXY(stringstream *input) {
+    void GDS::readXY(stringstream *input) {
         input->seekp(0, ios::end);
         unsigned int length = input->tellp();
         int count = length / 8;
@@ -260,73 +260,73 @@ namespace gdsfp {
         onParsedXY(count, x, y);
     }
 
-    void gdsFileParser::readLayer(stringstream *input) {
+    void GDS::readLayer(stringstream *input) {
         unsigned short layer;
         layer = readShort(input);
         onParsedLayer(layer);
     }
 
-    void gdsFileParser::readWidth(stringstream *input) {
+    void GDS::readWidth(stringstream *input) {
         int width;
         width = readInt(input);
         onParsedWidth(width);
     }
 
-    void gdsFileParser::readDataType(stringstream *input) {
+    void GDS::readDataType(stringstream *input) {
         unsigned short dataType;
         dataType = readShort(input);
         onParsedDataType(dataType);
     }
 
-    void gdsFileParser::readTextType(stringstream *input) {
+    void GDS::readTextType(stringstream *input) {
         unsigned short textType;
         textType = readShort(input);
         onParsedTextType(textType);
     }
 
-    void gdsFileParser::readAngle(stringstream *input) {
+    void GDS::readAngle(stringstream *input) {
         double angle;
         angle = readDouble(input);
         onParsedAngle(angle);
     }
 
-    void gdsFileParser::readMag(stringstream *input) {
+    void GDS::readMag(stringstream *input) {
         double mag;
         mag = readDouble(input);
         onParsedMag(mag);
     }
 
-    void gdsFileParser::readBeginExtension(stringstream *input) {
+    void GDS::readBeginExtension(stringstream *input) {
         unsigned int bext;
         bext = readInt(input);
         onParsedBeginExtension(bext);
     }
 
-    void gdsFileParser::readEndExtension(stringstream *input) {
+    void GDS::readEndExtension(stringstream *input) {
         unsigned int eext;
         eext = readInt(input);
         onParsedEndExtension(eext);
     }
 
-    void gdsFileParser::readPropertyNumber(stringstream *input) {
+    void GDS::readPropertyNumber(stringstream *input) {
         unsigned short propNum;
         propNum = readShort(input);
         onParsedPropertyNumber(propNum);
     }
 
-    void gdsFileParser::readNodeType(stringstream *input) {
+    void GDS::readNodeType(stringstream *input) {
         unsigned short nodeType;
         nodeType = readShort(input);
         onParsedNodeType(nodeType);
     }
 
-    void gdsFileParser::readBoxType(stringstream *input) {
+    void GDS::readBoxType(stringstream *input) {
         unsigned short boxType;
         boxType = readShort(input);
         onParsedBoxType(boxType);
     }
 
-    void gdsFileParser::parseBuffer(stringstream *input) {
+    void GDS::parseBuffer(stringstream *input) {
         char recType, dataType;
         input->read(&recType, sizeof(recType));
         input->read(&dataType, sizeof(dataType));
@@ -479,7 +479,7 @@ namespace gdsfp {
         }
     }
 
-    int gdsFileParser::parse(const char *filePath) {
+    int GDS::parse(const char *filePath) {
         std::ifstream gdsFile(filePath, ios::in | ios::binary);
 
         if (gdsFile.is_open()) {
@@ -508,4 +508,4 @@ namespace gdsfp {
 
         return 0;
     }
-} // End namespace gdsfp
+} // End namespace GDS

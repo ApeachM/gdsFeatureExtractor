@@ -37,7 +37,7 @@
 #ifndef GDSCALMARECORDS_H_
 #define GDSCALMARECORDS_H_
 
-namespace gdsfp {
+namespace GDS {
     /*
      *  Record data type
      */
@@ -226,7 +226,7 @@ namespace gdsfp {
                                        library. Had 1 to 32 entries with group
                                        numbers, user numbers and access rights. */
     };
-} // End namespace gdsfp
+} // End namespace GDS
 
 #endif // GDSCALMARECORDS_H_
 

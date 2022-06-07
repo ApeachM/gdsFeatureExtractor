@@ -35,10 +35,10 @@
 #include <fstream>
 #include <sstream>
 
-namespace gdsfp {
+namespace GDS {
     class ifstream;
 
-    class gdsFileParser {
+    class GDS {
     public:
         int parse(const char *filePath);
 
@@ -206,6 +206,6 @@ namespace gdsfp {
         void readBoxType(std::stringstream *input);
     };
 
-} // End namespace gdsfp
+} // End namespace GDS
 
 #endif //GDSFILEPARSER_H_
