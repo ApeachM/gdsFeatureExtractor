@@ -29,12 +29,7 @@
  *
  */
 
-#include <stdlib.h>
-
-#include <cstdio>
 #include <iostream>
-#include <iomanip>
-#include <cstring>
 #include <iomanip>
 
 #include "GDS.h"
@@ -43,14 +38,14 @@ using namespace std;
 
 #define SET_2W setfill('0') << setw(2)
 
-class MyTestParser : public GDS::GDS {
+class MyTestGDS : public GDS::GDS {
 protected:
-    virtual void onParsedGDSVersion(unsigned short version) {
+    void onParsedGDSVersion(unsigned short version) override {
         cout << "GDSII Version: " << version << endl;
     };
 
-    virtual void onParsedModTime(short year, short month, short day,
-                                 short hour, short minute, short sec) {
+    void onParsedModTime(short year, short month, short day,
+                                 short hour, short minute, short sec) override {
         cout << "Modified Time: " << endl;
 
         if (year == 0 && month == 0) {
@@ -62,8 +57,8 @@ protected:
         }
     };
 
-    virtual void onParsedAccessTime(short year, short month, short day,
-                                    short hour, short minute, short sec) {
+    void onParsedAccessTime(short year, short month, short day,
+                                    short hour, short minute, short sec) override {
         cout << "Accessed Time: " << endl;
 
         if (year == 0 && month == 0) {
@@ -75,92 +70,92 @@ protected:
         }
     };
 
-    virtual void onParsedLibName(const char *libName) {
+    void onParsedLibName(const char *libName) override {
         cout << "LibName: " << libName << endl;
     };
 
-    virtual void onParsedUnits(double userUnits, double dbUnits) {
+    void onParsedUnits(double userUnits, double dbUnits) override {
         cout << "UserUnits: " << setprecision(9) << fixed << userUnits << endl;
         cout << "DBUnits: " << setprecision(9) << fixed << dbUnits << endl;
     };
 
-    virtual void onParsedStrName(const char *strName) {
+    void onParsedStrName(const char *strName) override {
         cout << "StrName: " << strName << endl;
     };
 
-    virtual void onParsedBoundaryStart() {
+    void onParsedBoundaryStart() override {
         cout << "Boundry start" << endl;
     };
 
-    virtual void onParsedPathStart() {
+    void onParsedPathStart() override {
         cout << "Path start" << endl;
     };
 
-    virtual void onParsedBoxStart() {
+    void onParsedBoxStart() override {
         cout << "Box start" << endl;
     };
 
-    virtual void onParsedEndElement() {
+    void onParsedEndElement() override {
         cout << "Element end" << endl;
     };
 
-    virtual void onParsedEndStructure() {
+    void onParsedEndStructure() override {
         cout << "Structure end" << endl;
     };
 
-    virtual void onParsedEndLib() {
+    void onParsedEndLib() override {
         cout << "Lib end" << endl;
     };
 
-    virtual void onParsedColumnsRows(unsigned short columns,
-                                     unsigned short rows) {
+    void onParsedColumnsRows(unsigned short columns,
+                                     unsigned short rows) override {
         cout << "Columns: " << columns << " Rows: " << rows << endl;
     };
 
-    virtual void onParsedPathType(unsigned short pathType) {
+    void onParsedPathType(unsigned short pathType) override {
         cout << "PathType: " << pathType << endl;
     };
 
-    virtual void onParsedStrans(short strans) {
+    void onParsedStrans(short strans) override {
         cout << "Strans: " << strans << endl;
     };
 
-    virtual void onParsedPresentation(short font, short valign,
-                                      short halign) {
+    void onParsedPresentation(short font, short valign,
+                                      short halign) override {
         cout << "Font: " << font << endl;
         cout << "Valign: " << valign << endl;
         cout << "Halign: " << halign << endl;
     };
 
-    virtual void onParsedNodeStart() {
+    void onParsedNodeStart() override {
         cout << "Node start" << endl;
     };
 
-    virtual void onParsedTextStart() {
+    void onParsedTextStart() override {
         cout << "Text start" << endl;
     };
 
-    virtual void onParsedSrefStart() {
+    void onParsedSrefStart() override {
         cout << "Sref start" << endl;
     };
 
-    virtual void onParsedArefStart() {
+    void onParsedArefStart() override {
         cout << "Aref start" << endl;
     };
 
-    virtual void onParsedSname(const char *sname) {
+    void onParsedSname(const char *sname) override {
         cout << "Sname: " << sname << endl;
     };
 
-    virtual void onParsedString(const char *str) {
+    void onParsedString(const char *str) override {
         cout << "String: " << str << endl;
     };
 
-    virtual void onParsedPropValue(const char *propValue) {
+    void onParsedPropValue(const char *propValue) override {
         cout << "Prop Value: " << propValue << endl;
     };
 
-    virtual void onParsedXY(int count, int x[], int y[]) {
+    void onParsedXY(int count, int x[], int y[]) override {
         cout << "XY: " << count << endl;
 
         for (int i = 0; i < count; ++i) {
@@ -170,47 +165,47 @@ protected:
         cout << endl;
     };
 
-    virtual void onParsedLayer(unsigned short layer) {
+    void onParsedLayer(unsigned short layer) override {
         cout << "Layer: " << layer << endl;
     };
 
-    virtual void onParsedWidth(int width) {
+    void onParsedWidth(int width) override {
         cout << "Width: " << width << endl;
     };
 
-    virtual void onParsedDataType(unsigned short dataType) {
+    void onParsedDataType(unsigned short dataType) override {
         cout << "Data Type: " << dataType << endl;
     };
 
-    virtual void onParsedTextType(unsigned short textType) {
+    void onParsedTextType(unsigned short textType) override {
         cout << "Text Type: " << textType << endl;
     };
 
-    virtual void onParsedAngle(double angle) {
+    void onParsedAngle(double angle) override {
         cout << "Angle: " << angle << endl;
     };
 
-    virtual void onParsedMag(double mag) {
+    void onParsedMag(double mag) override {
         cout << "Mag: " << mag << endl;
     };
 
-    virtual void onParsedBeginExtension(unsigned short bext) {
+    void onParsedBeginExtension(unsigned short bext) override {
         cout << "Begin Extension: " << bext << endl;
     };
 
-    virtual void onParsedEndExtension(unsigned short eext) {
+    void onParsedEndExtension(unsigned short eext) override {
         cout << "End Extension: " << eext << endl;
     };
 
-    virtual void onParsedPropertyNumber(unsigned short propNum) {
+    void onParsedPropertyNumber(unsigned short propNum) override {
         cout << "Property Number: " << propNum << endl;
     };
 
-    virtual void onParsedNodeType(unsigned short nodeType) {
+    void onParsedNodeType(unsigned short nodeType) override {
         cout << "Node Type: " << nodeType << endl;
     };
 
-    virtual void onParsedBoxType(unsigned short boxType) {
+    void onParsedBoxType(unsigned short boxType) override {
         cout << "Box Type: " << boxType << endl;
     };
 };
@@ -228,7 +223,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    MyTestParser parser;
-    return parser.parse(argv[1]);
+    MyTestGDS gds;
+    return gds.parse(argv[1]);
 }
 
