@@ -43,7 +43,7 @@ namespace gdsfp {
         int parse(const char *filePath);
 
     protected:
-        virtual void onParsedGDSVersion(unsigned short version) = 0;
+        virtual void onParsedGDSVersion(unsigned short gdsVersion) = 0;
 
         virtual void onParsedModTime(short year, short month, short day,
                                      short hour, short minute, short sec) = 0;
