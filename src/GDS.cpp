@@ -125,7 +125,9 @@ namespace GDS {
     }
 
     void GDS::readHeader(stringstream *input) {
-        onParsedGDSVersion(readShort(input));
+        short gdsVersion = readShort(input);
+        onParsedGDSVersion(gdsVersion);
+        this->version = gdsVersion;
     }
 
     void GDS::readModTimeStamp(stringstream *input) {
@@ -141,21 +143,28 @@ namespace GDS {
     }
 
     void GDS::readLibName(stringstream *input) {
-        std::string libName;
-        readString(input, &libName);
-        onParsedLibName(libName.c_str());
+        std::string libname;
+        readString(input, &libname);
+        onParsedLibName(libname.c_str());
+        this->libName = libname;
     }
 
     void GDS::readUnits(stringstream *input) {
         double uu = readDouble(input);
         double db = readDouble(input);
         onParsedUnits(uu, db);
+        this->userUnit = uu;
+        this->dbUnit = db;
     }
 
     void GDS::readStrName(stringstream *input) {
         string strName;
         readString(input, &strName);
         onParsedStrName(strName.c_str());
+
+        Structure structure;
+        structure.name = strName;
+        this->structures.push_back(structure);
     }
 
     void GDS::readBoundary(stringstream *input) {
@@ -168,6 +177,9 @@ namespace GDS {
 
     void GDS::readBox(stringstream *input) {
         onParsedBoxStart();
+        Box box;
+        this->structures[structures.size() - 1].boxes.push_back(box);
+        this->currentElement = 0;
     }
 
     void GDS::readEndElement(stringstream *input) {
@@ -264,6 +276,7 @@ namespace GDS {
         unsigned short layer;
         layer = readShort(input);
         onParsedLayer(layer);
+        this->setLayer(layer);
     }
 
     void GDS::readWidth(stringstream *input) {
@@ -324,6 +337,8 @@ namespace GDS {
         unsigned short boxType;
         boxType = readShort(input);
         onParsedBoxType(boxType);
+        Structure &s = structures[structures.size() - 1];
+        s.boxes[s.boxes.size() - 1].type = boxType;
     }
 
     void GDS::parseBuffer(stringstream *input) {
@@ -507,5 +522,16 @@ namespace GDS {
         }
 
         return 0;
+    }
+
+
+    /* Additional Functions for Feature extraction*/
+
+    void GDS::setLayer(short layer) {
+        if (this->currentElement == 0){
+            Structure &s = this->structures[this->structures.size() - 1];
+            Box &b = s.boxes[s.boxes.size() - 1];
+            b.layer = layer;
+        }
     }
 } // End namespace GDS

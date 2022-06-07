@@ -34,11 +34,22 @@
 
 #include <fstream>
 #include <sstream>
+#include <vector>
+#include "DataStructures.h"
+
+using namespace std;
 
 namespace GDS {
     class ifstream;
 
     class GDS {
+    private:
+        int currentElement = 0;  // 0: box, 1:
+        short version;
+        string libName;
+        double userUnit=0, dbUnit=0;
+        vector<Structure> structures;
+
     public:
         int parse(const char *filePath);
 
@@ -118,6 +129,8 @@ namespace GDS {
         virtual void onParsedBoxType(unsigned short boxType) = 0;
 
     private:
+        void setLayer(short layer);
+
         void readString(std::stringstream *input, std::string *str);
 
         void readTimeStamp(std::stringstream *input, short *year, short *month,
