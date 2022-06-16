@@ -13,6 +13,8 @@
 #include <vector>
 #include <climits>
 #include <cfloat>
+#include <cassert>
+
 
 #include "gdsFileParser.h"
 
@@ -30,15 +32,54 @@ public:
     vector<Coordinate> coordinates;
 };
 
+class Text {
+public:
+    unsigned short layer = USHRT_MAX;
+    unsigned short type = USHRT_MAX;
+    vector<Coordinate> coordinates;
+    string textString;
+};
+
+class Sref {
+public:
+    string name;
+    short Strans = SHRT_MAX;
+    double angle = DBL_MAX;
+    unsigned short type = USHRT_MAX;
+    vector<Coordinate> coordinates;
+
+};
+
+class Boundary {
+public:
+    unsigned short layer = USHRT_MAX;
+    unsigned short type = USHRT_MAX;
+    vector<Coordinate> coordinates;
+
+};
+
+class Path {
+public:
+    unsigned short layer = USHRT_MAX;
+    unsigned short type = USHRT_MAX;
+    int width = INT_MAX;
+    vector<unsigned short> extension;
+};
+
 class Structure {
 public:
     string name;
     vector<Box> boxes;
+    vector<Text> texts;
+    vector<Sref> srefs;
+    vector<Boundary> boundaries;
+    vector<Path> paths;
 };
 
 class GDS : public gdsfp::gdsFileParser {
 private:
-    int currentElement = INT_MAX;  // 0: box, 1: boundary, 2: path, -1: end element and not assiged
+    // box: 0, boundary: 1, path: 2, text: 3, Sref: 4, end element and not assiged: -1
+    int currentElement = INT_MAX;
     string libName;
     double userUnit = DBL_MAX, dbUnit = DBL_MAX;
     unsigned short version = SHRT_MAX;
@@ -87,19 +128,25 @@ protected:
     void onParsedBoundaryStart() override {
         cout << "onParsedBoundaryStart" << endl;
         this->currentElement = 1;
+        Boundary boundary;
+        Structure &s = this->getLastStructure();
+        s.boundaries.push_back(boundary);
     };
 
     void onParsedPathStart() override {
         cout << "onParsedPathStart" << endl;
         this->currentElement = 2;
+        Structure &s = this->getLastStructure();
+        Path path;
+        s.paths.push_back(path);
     };
 
     void onParsedBoxStart() override {
         cout << "onParsedBoxStart" << endl;
         this->currentElement = 0;
-        Box b;
+        Box box;
         Structure &s = getLastStructure();
-        s.boxes.push_back(b);
+        s.boxes.push_back(box);
     };
 
     void onParsedEndElement() override {
@@ -108,11 +155,11 @@ protected:
     };
 
     void onParsedEndStructure() override {
-        cout << "Structure end" << endl;
+        cout << "onParsedEndStructure" << endl;
     };
 
     void onParsedEndLib() override {
-        cout << "Lib end" << endl;
+        cout << "onParsedEndLib" << endl;
     };
 
     void onParsedColumnsRows(unsigned short columns,
@@ -121,11 +168,16 @@ protected:
     };
 
     void onParsedPathType(unsigned short pathType) override {
-        cout << "PathType: " << pathType << endl;
+        cout << "onParsedPathType" << endl;
+        assert(this->currentElement == 2);
+        Path &p = this->getLastPath();
+        p.type = pathType;
     };
 
     void onParsedStrans(short strans) override {
-        cout << "Strans: " << strans << endl;
+        cout << "onParsedStrans" << endl;
+        Sref &sref = this->getLastSref();
+        sref.Strans = strans;
     };
 
     void onParsedPresentation(short font, short valign,
@@ -135,30 +187,50 @@ protected:
         cout << "Halign: " << halign << endl;
     };
 
+    //
     void onParsedNodeStart() override {
         cout << "Node start" << endl;
     };
 
     void onParsedTextStart() override {
-        cout << "Text start" << endl;
+        cout << "onParsedTextStart" << endl;
+        this->currentElement = 3;
+        Text t;
+        Structure &s = getLastStructure();
+        s.texts.push_back(t);
     };
 
     void onParsedSrefStart() override {
-        cout << "Sref start" << endl;
+        cout << "onParsedSrefStart" << endl;
+        this->currentElement = 4;
+        Sref sref;
+        Structure &s = this->getLastStructure();
+        s.srefs.push_back(sref);
     };
 
+    //
     void onParsedArefStart() override {
         cout << "Aref start" << endl;
     };
 
     void onParsedSname(const char *sname) override {
-        cout << "Sname: " << sname << endl;
+        cout << "onParsedSname" << endl;
+        assert(this->currentElement == 4);
+        Sref &sref = this->getLastSref();
+        sref.name = sname;
     };
 
     void onParsedString(const char *str) override {
-        cout << "String: " << str << endl;
+        cout << "onParsedString" << endl;
+        if (this->currentElement == 3) {
+            Text &text = this->getLastText();
+            text.textString = str;
+        } else {
+            // any case?
+        }
     };
 
+    //
     void onParsedPropValue(const char *propValue) override {
         cout << "Prop Value: " << propValue << endl;
     };
@@ -175,6 +247,18 @@ protected:
                 // if current element is Box
                 Box &b = getLastBox();
                 b.coordinates.push_back(coordinate);
+            } else if (this->currentElement == 1) {
+                // if current element is Boundary
+                Boundary &boundary = this->getLastBoundary();
+                boundary.coordinates.push_back(coordinate);
+            } else if (this->currentElement == 3) {
+                // if current element is Text
+                Text &t = getLastText();
+                t.coordinates.push_back(coordinate);
+            } else if (this->currentElement == 4) {
+                // if current element is Sref
+                Sref &sref = this->getLastSref();
+                sref.coordinates.push_back(coordinate);
             }
         }
     };
@@ -182,23 +266,42 @@ protected:
     void onParsedLayer(unsigned short layer) override {
         cout << "onParsedLayer " << endl;
         this->setLayer(layer);
-
     };
 
     void onParsedWidth(int width) override {
-        cout << "Width: " << width << endl;
+        cout << "onParsedWidth" << endl;
+        if (this->currentElement == 2) {
+            // current element: path
+            Path &path = this->getLastPath();
+            path.width = width;
+        } else {
+            // any case?
+        }
     };
 
     void onParsedDataType(unsigned short dataType) override {
-        cout << "Data Type: " << dataType << endl;
+        cout << "onParsedDataType" << endl;
+        if (this->currentElement == 1) {
+            // current element: boundary
+            Boundary &boundary = this->getLastBoundary();
+            boundary.type = dataType;
+        } else if (this->currentElement == 3) {
+            // current element: Sref
+            Sref &sref = this->getLastSref();
+            sref.type = dataType;
+        }
     };
 
     void onParsedTextType(unsigned short textType) override {
-        cout << "Text Type: " << textType << endl;
+        cout << "onParsedTextType" << endl;
+        Text &text = this->getLastText();
+        text.type = textType;
     };
 
     void onParsedAngle(double angle) override {
-        cout << "Angle: " << angle << endl;
+        cout << "onParsedAngle" << endl;
+        Sref &sref = this->getLastSref();
+        sref.angle = angle;
     };
 
     void onParsedMag(double mag) override {
@@ -206,17 +309,24 @@ protected:
     };
 
     void onParsedBeginExtension(unsigned short bext) override {
-        cout << "Begin Extension: " << bext << endl;
+        cout << "onParsedBeginExtension" << endl;
+        Path &path = this->getLastPath();
+        path.extension.push_back(bext);
     };
 
     void onParsedEndExtension(unsigned short eext) override {
-        cout << "End Extension: " << eext << endl;
+        cout << "onParsedEndExtension" << endl;
+        assert(this->currentElement == 2);
+        Path &path = this->getLastPath();
+        path.extension.push_back(eext);
     };
 
+    //
     void onParsedPropertyNumber(unsigned short propNum) override {
         cout << "Property Number: " << propNum << endl;
     };
 
+    //
     void onParsedNodeType(unsigned short nodeType) override {
         cout << "Node Type: " << nodeType << endl;
     };
@@ -227,6 +337,13 @@ protected:
         b.type = boxType;
     };
 
+    Text &getLastText();
+
+    Sref &getLastSref();
+
+    Boundary &getLastBoundary();
+
+    Path &getLastPath();
 };
 
 
