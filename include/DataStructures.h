@@ -91,6 +91,15 @@ private:
 
     Box &getLastBox();
 
+    Text &getLastText();
+
+    Sref &getLastSref();
+
+    Boundary &getLastBoundary();
+
+    Path &getLastPath();
+
+
 protected:
     void onParsedGDSVersion(unsigned short gdsVersion) override {
         cout << "onParsedGDSVersion" << endl;
@@ -227,6 +236,7 @@ protected:
             text.textString = str;
         } else {
             // any case?
+            assert(0);
         }
     };
 
@@ -276,6 +286,7 @@ protected:
             path.width = width;
         } else {
             // any case?
+            assert(0);
         }
     };
 
@@ -337,13 +348,6 @@ protected:
         b.type = boxType;
     };
 
-    Text &getLastText();
-
-    Sref &getLastSref();
-
-    Boundary &getLastBoundary();
-
-    Path &getLastPath();
 };
 
 
