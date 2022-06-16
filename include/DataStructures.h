@@ -85,6 +85,16 @@ private:
     unsigned short version = SHRT_MAX;
     vector<Structure> structures;
 
+    // Features
+    long int cellCount = 0;
+    int combinationalRatio = 0;
+    int input_pad_count = 0;
+    int output_pad_count = 0;
+    int averageFanIn = 0;
+    int averageBoundingBox = 0;
+    int averageTopologicalOrder = 0;
+
+
     void setLayer(unsigned short layerNum);
 
     Structure &getLastStructure();
@@ -255,8 +265,8 @@ protected:
 
             if (this->currentElement == 0) {
                 // if current element is Box
-                Box &b = getLastBox();
-                b.coordinates.push_back(coordinate);
+                Box &box = getLastBox();
+                box.coordinates.push_back(coordinate);
             } else if (this->currentElement == 1) {
                 // if current element is Boundary
                 Boundary &boundary = this->getLastBoundary();
@@ -360,6 +370,10 @@ protected:
         b.type = boxType;
     };
 
+public:
+    void extractFeatures();
+
+    void getCellCount();
 };
 
 

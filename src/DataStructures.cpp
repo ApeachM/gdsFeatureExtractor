@@ -30,19 +30,19 @@ Structure &GDS::getLastStructure() {
 }
 
 Box &GDS::getLastBox() {
-    Structure &s = getLastStructure();
+    Structure &s = this->getLastStructure();
     Box &b = s.boxes[s.boxes.size() - 1];
     return b;
 }
 
 Text &GDS::getLastText() {
-    Structure &s = getLastStructure();
+    Structure &s = this->getLastStructure();
     Text &t = s.texts[s.texts.size() - 1];
     return t;
 }
 
 Sref &GDS::getLastSref() {
-    Structure &s = getLastStructure();
+    Structure &s = this->getLastStructure();
     Sref &sref = s.srefs[s.srefs.size() - 1];
     return sref;
 }
@@ -57,4 +57,17 @@ Path &GDS::getLastPath() {
     Structure &s = this->getLastStructure();
     Path &p = s.paths[s.paths.size() - 1];
     return p;
+}
+
+void GDS::extractFeatures() {
+    this->getCellCount();
+
+}
+
+void GDS::getCellCount() {
+    for (const auto& structure : this->structures) {
+        for (int j = 0; j < structure.srefs.size(); ++j) {
+            this->cellCount += this->cellCount + 1;
+        }
+    }
 }

@@ -49,5 +49,7 @@ int main(int argc, char *argv[]) {
     }
     GDS gds;
     gds.parse(argv[1]);
+    gds.extractFeatures();
+    cout << "end" << endl;
 }
 
