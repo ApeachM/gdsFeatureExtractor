@@ -17,6 +17,9 @@ void GDS::setLayer(unsigned short layerNum) {
         // current element: Text
         Text &t = s.texts[s.texts.size() - 1];
         t.layer = layerNum;
+    } else {
+        // any case?
+        assert(0);
     }
 }
 

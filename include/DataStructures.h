@@ -261,6 +261,9 @@ protected:
                 // if current element is Boundary
                 Boundary &boundary = this->getLastBoundary();
                 boundary.coordinates.push_back(coordinate);
+            } else if (this->currentElement == 2) {
+                Text &text = this->getLastText();
+                text.coordinates.push_back(coordinate);
             } else if (this->currentElement == 3) {
                 // if current element is Text
                 Text &t = getLastText();
@@ -269,6 +272,9 @@ protected:
                 // if current element is Sref
                 Sref &sref = this->getLastSref();
                 sref.coordinates.push_back(coordinate);
+            } else {
+                // any case?
+                assert(0);
             }
         }
     };
@@ -296,10 +302,16 @@ protected:
             // current element: boundary
             Boundary &boundary = this->getLastBoundary();
             boundary.type = dataType;
+        } else if (this->currentElement == 2) {
+            Text& text = this->getLastText();
+            text.type = dataType;
         } else if (this->currentElement == 3) {
             // current element: Sref
             Sref &sref = this->getLastSref();
             sref.type = dataType;
+        } else {
+            // any case?
+            assert(0);
         }
     };
 
