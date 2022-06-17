@@ -9,7 +9,7 @@
 #include <iomanip>
 #include <cstring>
 #include <iomanip>
-
+#include <unordered_map>
 #include <vector>
 #include <climits>
 #include <cfloat>
@@ -22,7 +22,7 @@ using namespace std;
 
 class Coordinate {
 public:
-    int x = INT_MAX, y = INT_MAX;
+    double x = INT_MAX, y = INT_MAX;
 };
 
 class Box {
@@ -62,7 +62,8 @@ class Path {
 public:
     unsigned short layer = USHRT_MAX;
     unsigned short type = USHRT_MAX;
-    int width = INT_MAX;
+    double width = DBL_MAX;
+    vector<Coordinate> coordinates;
     vector<unsigned short> extension;
 };
 
@@ -74,8 +75,22 @@ public:
     vector<Sref> srefs;
     vector<Boundary> boundaries;
     vector<Path> paths;
-};
+    unordered_map<string, size_t> srefName_map, textName_map;
 
+};
+class Circuit{
+public:
+    long int cellCount = 0;
+    int combinationalRatio = 0;
+    int ioPadCount = 0;
+    int averageFanIn = 0;
+    int averageBoundingBox = 0;
+    int averageTopologicalOrder = 0;
+
+    int x_min = INT_MAX, y_min = INT_MAX, x_max = -INT_MAX, y_max = -INT_MAX;
+    vector<vector<Path>> connectedPaths;
+
+};
 class GDS : public gdsfp::gdsFileParser {
 private:
     // box: 0, boundary: 1, path: 2, text: 3, Sref: 4, end element and not assiged: -1
@@ -84,15 +99,8 @@ private:
     double userUnit = DBL_MAX, dbUnit = DBL_MAX;
     unsigned short version = SHRT_MAX;
     vector<Structure> structures;
-
+    Circuit circuit;
     // Features
-    long int cellCount = 0;
-    int combinationalRatio = 0;
-    int input_pad_count = 0;
-    int output_pad_count = 0;
-    int averageFanIn = 0;
-    int averageBoundingBox = 0;
-    int averageTopologicalOrder = 0;
 
 
     void setLayer(unsigned short layerNum);
@@ -237,6 +245,9 @@ protected:
         assert(this->currentElement == 4);
         Sref &sref = this->getLastSref();
         sref.name = sname;
+
+        Structure &s = this->getLastStructure();
+        s.srefName_map[sname] = s.srefs.size()-1;
     };
 
     void onParsedString(const char *str) override {
@@ -244,6 +255,9 @@ protected:
         if (this->currentElement == 3) {
             Text &text = this->getLastText();
             text.textString = str;
+
+            Structure &s = this->getLastStructure();
+            s.textName_map[str] = s.texts.size() - 1;
         } else {
             // any case?
             assert(0);
@@ -260,8 +274,8 @@ protected:
 
         for (int i = 0; i < count; ++i) {
             Coordinate coordinate;
-            coordinate.x = x[i];
-            coordinate.y = y[i];
+            coordinate.x = ((double) x[i]) * this->userUnit;
+            coordinate.y = ((double) y[i]) * this->userUnit;
 
             if (this->currentElement == 0) {
                 // if current element is Box
@@ -272,11 +286,12 @@ protected:
                 Boundary &boundary = this->getLastBoundary();
                 boundary.coordinates.push_back(coordinate);
             } else if (this->currentElement == 2) {
-                Text &text = this->getLastText();
-                text.coordinates.push_back(coordinate);
+                // if current element is path
+                Path &path = getLastPath();
+                path.coordinates.push_back(coordinate);
             } else if (this->currentElement == 3) {
                 // if current element is Text
-                Text &t = getLastText();
+                Text &t = this->getLastText();
                 t.coordinates.push_back(coordinate);
             } else if (this->currentElement == 4) {
                 // if current element is Sref
@@ -299,7 +314,7 @@ protected:
         if (this->currentElement == 2) {
             // current element: path
             Path &path = this->getLastPath();
-            path.width = width;
+            path.width = width * this->userUnit;
         } else {
             // any case?
             assert(0);
@@ -374,6 +389,12 @@ public:
     void extractFeatures();
 
     void getCellCount();
+
+    void connectPaths();
+
+    void getDieSize();
+
+    void getIOpads();
 };
 
 

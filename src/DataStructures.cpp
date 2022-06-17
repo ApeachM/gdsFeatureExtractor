@@ -9,7 +9,7 @@ void GDS::setLayer(unsigned short layerNum) {
     } else if (this->currentElement == 1) {
         Boundary &boundary = s.boundaries[s.boundaries.size() - 1];
         boundary.layer = layerNum;
-    } else if (this->currentElement == 2){
+    } else if (this->currentElement == 2) {
         // current element: Path
         Path &path = s.paths[s.paths.size() - 1];
         path.layer = layerNum;
@@ -61,13 +61,66 @@ Path &GDS::getLastPath() {
 
 void GDS::extractFeatures() {
     this->getCellCount();
-
+    this->getIOpads();
 }
 
 void GDS::getCellCount() {
-    for (const auto& structure : this->structures) {
+    for (const auto &structure: this->structures) {
         for (int j = 0; j < structure.srefs.size(); ++j) {
-            this->cellCount += this->cellCount + 1;
+            this->circuit.cellCount += this->circuit.cellCount + 1;
         }
     }
+}
+
+void GDS::getDieSize() {
+    // See the Boxes, and get min, max coordinates
+    for (const auto& s : this->structures) {
+        for (const auto& box : s.boxes) {
+            for (auto coordinate : box.coordinates) {
+                if (coordinate.x < this->circuit.x_min) {
+                    this->circuit.x_min = coordinate.x;
+                }
+                if (coordinate.x > this->circuit.x_max) {
+                    this->circuit.x_max = coordinate.x;
+                }
+                if (coordinate.y < this->circuit.y_min) {
+                    this->circuit.y_min = coordinate.y;
+                }
+                if (coordinate.y > this->circuit.y_max) {
+                    this->circuit.y_max = coordinate.y;
+                }
+            }
+        }
+    }
+};
+
+
+void GDS::getIOpads() {
+    this->getDieSize();
+    vector<Path*> ioPaths;
+    for (int k = 0; k < this->structures.size(); ++k) {
+        Structure& structure = this->structures[k];
+        for (int i = 0; i < structure.paths.size(); ++i) {
+            Path& path = structure.paths[i];
+            for (int j = 0; j < path.coordinates.size(); ++j) {
+                Coordinate coordinate = path.coordinates[j];
+                if (coordinate.x <= this->circuit.x_min) {
+                    ioPaths.push_back(&path);
+                } else if (coordinate.x >= this->circuit.x_max){
+                    ioPaths.push_back(&path);
+                }
+                if (coordinate.y <= this->circuit.y_min) {
+                    ioPaths.push_back(&path);
+                } else if (coordinate.y >= this->circuit.y_max) {
+                    ioPaths.push_back(&path);
+                }
+            }
+        }
+    }
+    this->circuit.ioPadCount = ioPaths.size();
+}
+
+
+void GDS::connectPaths() {
+
 }
