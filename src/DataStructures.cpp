@@ -65,10 +65,8 @@ void GDS::extractFeatures() {
 }
 
 void GDS::getCellCount() {
-    for (const auto &structure: this->structures) {
-        for (int j = 0; j < structure.srefs.size(); ++j) {
-            this->circuit.cellCount += this->circuit.cellCount + 1;
-        }
+    for (auto &structure: this->structures) {
+        this->circuit.cellCount += structure.srefs.size();
     }
 }
 
